@@ -18,11 +18,11 @@ int main()
     printf("Initial size: %d\n", v.size(&v));
     printf("Initial capacity [Bytes]: %d\n", v.capacity(&v));
 
-    v.resize(&v, 10);
+    v.resize(&v, 2);
     printf("New size: %d\n", v.size(&v));
     printf("New capacity [Bytes]: %d\n", v.capacity(&v));
 
-    v.push_back(&v, (void*) 5);
+    printf("Is push back ok? %d\n", v.push_back(&v, "a\n"));
     printf("First element: %d\n", v.front(&v));
 
     return 0;

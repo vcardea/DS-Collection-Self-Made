@@ -11,6 +11,8 @@
 
 #define VECTOR_INIT_CAPACITY 8
 #define VECTOR_INIT_SIZE 0
+#define SUCCESS 1
+#define FAILURE 0
 
 /**
  * pointer* begin() - iterator
@@ -41,21 +43,31 @@ typedef struct SVector vector;
 struct SVector {
     members members;
     
+    void* (*at)(vector*, int);
     int (*capacity)(vector*);
     void* (*front)(vector*);
-    void (*push_back)(vector*, void*);
-    void (*resize)(vector*, int);
+    int (*push_back)(vector*, void*);
+    int (*resize)(vector*, int);
     int (*size)(vector*);
 };
 
 int update_capacity(int size)
 {
-    return (sizeof(void *) * size + VECTOR_INIT_CAPACITY);
+    return (sizeof(void *) * size * 2);
 }
 
 void* alloc_items(int capacity)
 {
     return malloc(sizeof(void *) * capacity);
+}
+
+void* vat(vector* v, int index)
+{
+    if (index >= 0 && index < v -> members.size)
+    {
+        return v -> members.items[index];
+    }
+    return NULL;
 }
 
 int vcapacity(vector* v)
@@ -65,23 +77,36 @@ int vcapacity(vector* v)
 
 void* vfront(vector* v)
 {
-    if (v -> members.size > 0)
+    return v -> at(v, 0);
+}
+
+int vpush_back(vector* v, void* value)
+{
+    printf("Entro");
+    int status = FAILURE;
+    if (v)
     {
-        return v -> members.items[0];
+        if (v -> members.size == v -> members.capacity)
+        {
+            v -> resize(v, v -> members.size + 1);
+        }
+        v -> members.items[v -> members.size] = value;
+        status = SUCCESS;
     }
-    return NULL;
+    printf("Esco");
+    return status;
 }
 
-void vpush_back(vector* v, void* value)
+int vresize(vector* v, int new_size)
 {
-    v -> resize(v, v -> members.size + 1);
-    v -> members.items[v -> members.size - 1] = value;
-}
-
-void vresize(vector* v, int new_size)
-{
-    v -> members.size = new_size;
-    v -> members.capacity = update_capacity(new_size);
+    int status = FAILURE;
+    if (v)
+    {
+        v -> members.size = new_size;
+        v -> members.capacity = update_capacity(new_size);
+        status = SUCCESS;
+    }
+    return status;
 }
 
 int vsize(vector* v)
@@ -92,6 +117,7 @@ int vsize(vector* v)
 void vector_init(vector *v)
 {
     // Methods
+    v -> at = vat;
     v -> capacity = vcapacity;
     v -> front = vfront;
     v -> resize = vresize;
@@ -99,6 +125,6 @@ void vector_init(vector *v)
  
     // Members
     v -> members.size = VECTOR_INIT_SIZE;
-    v -> members.capacity = update_capacity(v -> members.size);
+    v -> members.capacity = VECTOR_INIT_CAPACITY;
     v -> members.items = alloc_items(v -> members.capacity);
 }
