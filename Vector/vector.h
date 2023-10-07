@@ -16,7 +16,6 @@
  * pointer* begin() - iterator
  * pointer* end() - iterator
  * 
- * void resize(N) - resize the vector
  * bool empty() - checks if the vector is empty
  * int shrink() - resize the vector to the minimum size. returns current size
  * <type> at(i) - accesses to the i-th element
@@ -42,9 +41,11 @@ typedef struct SVector vector;
 struct SVector {
     members members;
     
-    int (*capacity)(vector *);
-    void (*resize)(vector *, int);
-    int (*size)(vector *);
+    int (*capacity)(vector*);
+    void* (*front)(vector*);
+    void (*push_back)(vector*, void*);
+    void (*resize)(vector*, int);
+    int (*size)(vector*);
 };
 
 int update_capacity(int size)
@@ -62,6 +63,21 @@ int vcapacity(vector* v)
     return v -> members.capacity;
 }
 
+void* vfront(vector* v)
+{
+    if (v -> members.size > 0)
+    {
+        return v -> members.items[0];
+    }
+    return NULL;
+}
+
+void vpush_back(vector* v, void* value)
+{
+    v -> resize(v, v -> members.size + 1);
+    v -> members.items[v -> members.size - 1] = value;
+}
+
 void vresize(vector* v, int new_size)
 {
     v -> members.size = new_size;
@@ -73,11 +89,11 @@ int vsize(vector* v)
     return v -> members.size;
 }
 
-
 void vector_init(vector *v)
 {
     // Methods
     v -> capacity = vcapacity;
+    v -> front = vfront;
     v -> resize = vresize;
     v -> size = vsize;
  

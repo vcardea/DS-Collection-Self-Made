@@ -22,5 +22,8 @@ int main()
     printf("New size: %d\n", v.size(&v));
     printf("New capacity [Bytes]: %d\n", v.capacity(&v));
 
+    v.push_back(&v, (void*) 5);
+    printf("First element: %d\n", v.front(&v));
+
     return 0;
 }
