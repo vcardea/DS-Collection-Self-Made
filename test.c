@@ -26,6 +26,10 @@ int main()
     printf("Current size:     %llu\n", v.size(&v));
     printf("Current capacity: %llu\n\n", v.capacity(&v));
 
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (char*) "c\n\0"));
+    printf("Current size:     %llu\n", v.size(&v));
+    printf("Current capacity: %llu\n\n", v.capacity(&v));
+
     printf("Front:            %s\n", (char*) v.members.items[0]);
 
     v.clear(&v);

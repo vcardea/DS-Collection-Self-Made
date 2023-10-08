@@ -50,11 +50,6 @@ struct SVector {
     size_t (*size)(vector*);
 };
 
-size_t update_capacity(size_t size)
-{
-    return size * 2;
-}
-
 void* vat(vector* v, size_t index)
 {
     if (v)
@@ -83,7 +78,7 @@ void vclear(vector* v)
 void vfree(vector* v)
 {
     free(v -> members.items);
-    v -> members.size = 0;
+    v -> members.size = VECTOR_INIT_SIZE;
     v -> members.capacity = VECTOR_INIT_CAPACITY;
     v -> members.items = NULL;
 }
@@ -120,8 +115,8 @@ size_t vresize(vector* v, size_t new_capacity)
     int status = FAILURE;
     if (v)
     {
-        v -> members.capacity = update_capacity(new_capacity);
-        void** new_items = malloc(new_capacity * v -> members.itemSize);
+        v -> members.capacity = new_capacity;
+        void** new_items = malloc(v -> members.capacity * v -> members.itemSize);
         if (new_items)
         {
             for (int i = 0; i < v -> members.size; i++)
