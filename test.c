@@ -13,17 +13,23 @@
 int main()
 {
     vector v;
-    vector_init(&v);
+    vector_init(&v, sizeof(char*), 1);
 
-    printf("Initial size: %d\n", v.size(&v));
-    printf("Initial capacity [Bytes]: %d\n", v.capacity(&v));
+    printf("Initial size:     %llu\n", v.size(&v));
+    printf("Initial capacity: %llu\n\n", v.capacity(&v));
 
-    v.resize(&v, 2);
-    printf("New size: %d\n", v.size(&v));
-    printf("New capacity [Bytes]: %d\n", v.capacity(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (char*) "a\n\0"));
+    printf("Current size:     %llu\n", v.size(&v));
+    printf("Current capacity: %llu\n\n", v.capacity(&v));
 
-    printf("Is push back ok? %d\n", v.push_back(&v, "a\n"));
-    printf("First element: %d\n", v.front(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (char*) "b\n\0"));
+    printf("Current size:     %llu\n", v.size(&v));
+    printf("Current capacity: %llu\n\n", v.capacity(&v));
+
+    printf("Front:            %s\n", (char*) v.members.items[0]);
+
+    v.clear(&v);
+    v.free(&v);
 
     return 0;
 }
