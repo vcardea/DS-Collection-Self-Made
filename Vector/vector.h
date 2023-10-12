@@ -12,6 +12,7 @@
 
 #define VECTOR_INIT_CAPACITY 1
 #define VECTOR_INIT_SIZE 0
+#define VECTOR_DEFAULT_ITEMSIZE 8
 #define SUCCESS 1
 #define FAILURE 0
 
@@ -45,6 +46,7 @@ struct SVector {
     void (*clear)(vector*);
     void (*free)(vector*);
     void* (*front)(vector*);
+    void (*set_item_size)(vector*, size_t);
     size_t (*push_back)(vector*, const void*);
     size_t (*resize)(vector*, size_t);
     size_t (*size)(vector*);
@@ -56,7 +58,7 @@ void* vat(vector* v, size_t index)
     {
         if (index < v -> members.size)
         {
-            return v -> members.items[index];
+            return v -> members.items + (index * v -> members.itemSize);
         }
     }
     return NULL;
@@ -86,6 +88,14 @@ void vfree(vector* v)
 void* vfront(vector* v)
 {
     return v -> at(v, 0);
+}
+
+void vset_item_size(vector* v, size_t new_itemSize)
+{
+    if (v)
+    {
+        v -> members.itemSize = new_itemSize;
+    }
 }
 
 size_t vpush_back(vector* v, const void* value)
@@ -144,6 +154,7 @@ void vector_init(vector *v, size_t itemSize, size_t initialCapacity)
     v -> clear = vclear;
     v -> free = vfree;
     v -> front = vfront;
+    v -> set_item_size = vset_item_size;
     v -> push_back = vpush_back;
     v -> resize = vresize;
     v -> size = vsize;
@@ -158,6 +169,14 @@ void vector_init(vector *v, size_t itemSize, size_t initialCapacity)
     {
         v -> members.capacity = VECTOR_INIT_CAPACITY;
     }
-    v -> members.itemSize = itemSize;
+
+    if (itemSize > 0)
+    {
+        v -> members.itemSize = itemSize;
+    }
+    else
+    {
+        v -> members.itemSize = VECTOR_DEFAULT_ITEMSIZE;
+    }
     v -> members.items = malloc(v -> members.capacity * v -> members.itemSize);
 }
