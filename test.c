@@ -13,27 +13,33 @@
 int main()
 {
     vector v;
-    vector_init(&v, sizeof(char*), 1);
+    vector_init(&v, sizeof(int*), 1);
 
+    printf("Is vector empty:  %d\n", v.empty(&v));
     printf("Initial size:     %llu\n", v.size(&v));
     printf("Initial capacity: %llu\n\n", v.capacity(&v));
 
-    printf("Is push back ok?  %llu\n", v.push_back(&v, (char*) "123456789\0"));
+    int var = 10;
+    int* ptr_int = &var;
+    printf("Is vector empty:  %d\n", v.empty(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
     printf("Current size:     %llu\n", v.size(&v));
-    printf("Current capacity: %llu\n\n", v.capacity(&v));
+    printf("Current capacity: %llu\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n\n", *(int*) v.back(&v));
 
-    printf("Is push back ok?  %llu\n", v.push_back(&v, (char*) "2345678\0"));
+    var = 68;
+    printf("Is vector empty:  %d\n", v.empty(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
     printf("Current size:     %llu\n", v.size(&v));
-    printf("Current capacity: %llu\n\n", v.capacity(&v));
-
-    printf("Is push back ok?  %llu\n", v.push_back(&v, (char*) "3456789\0"));
-    printf("Current size:     %llu\n", v.size(&v));
-    printf("Current capacity: %llu\n\n", v.capacity(&v));
+    printf("Current capacity: %llu\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n\n", *(int*) v.back(&v));
 
     int i;
     for (i = 0; i < v.size(&v); i++)
     {
-        printf("v[%d] = %s\n", i, (char*) v.at(&v, i));
+        printf("v[%d] = %d\n", i, *(int*) v.at(&v, i));
     }
 
     v.clear(&v);
