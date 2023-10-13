@@ -19,7 +19,7 @@ int main()
     printf("Initial size:     %llu\n", v.size(&v));
     printf("Initial capacity: %llu\n\n", v.capacity(&v));
 
-    int var = 10;
+    int var = 2;
     int* ptr_int = &var;
     printf("Is vector empty:  %d\n", v.empty(&v));
     printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
@@ -28,9 +28,44 @@ int main()
     printf("Front:            %d\n", *(int*) v.front(&v));
     printf("Back:             %d\n\n", *(int*) v.back(&v));
 
-    var = 68;
+    var = 4;
     printf("Is vector empty:  %d\n", v.empty(&v));
     printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
+    printf("Current size:     %llu\n", v.size(&v));
+    printf("Current capacity: %llu\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n\n", *(int*) v.back(&v));
+
+    var = 8;
+    printf("Is vector empty:  %d\n", v.empty(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
+    printf("Current size:     %llu\n", v.size(&v));
+    printf("Current capacity: %llu\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n\n", *(int*) v.back(&v));
+
+    var = 16;
+    printf("Is vector empty:  %d\n", v.empty(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
+    printf("Current size:     %llu\n", v.size(&v));
+    printf("Current capacity: %llu\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n\n", *(int*) v.back(&v));
+
+    var = 32;
+    printf("Is vector empty:  %d\n", v.empty(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
+    printf("Is shrink ok?     %d\n", v.shrink(&v));
+    printf("Current size:     %llu\n", v.size(&v));
+    printf("Current capacity: %llu\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n", *(int*) v.back(&v));
+    printf("Item removed:     %d\n\n", *(int*) v.pop_back(&v));
+
+    var = 64;
+    printf("Is vector empty:  %d\n", v.empty(&v));
+    printf("Is push back ok?  %llu\n", v.push_back(&v, (int*) ptr_int));
+    printf("Is shrink ok?     %d\n", v.shrink(&v));
     printf("Current size:     %llu\n", v.size(&v));
     printf("Current capacity: %llu\n", v.capacity(&v));
     printf("Front:            %d\n", *(int*) v.front(&v));
