@@ -46,7 +46,7 @@ struct SVector {
     void* (*pop_back)(vector*);
     size_t (*push_back)(vector*, const void*);
     size_t (*resize)(vector*, size_t);
-    int (*shrink)(vector*);
+    size_t (*shrink)(vector*, size_t);
     size_t (*size)(vector*);
 };
 
@@ -123,12 +123,13 @@ void* vpop_back(vector* v)
     {
         if (v -> members.items != NULL)
         {
-            size_t index = (v -> size(v) - 1) * v -> members.item_size;
-            item = v -> at(v, index);
-            void* destination = (char*) v -> members.items + index;
-            const void* value = 0;
-            memcpy(destination, value, v -> members.item_size);
+//            size_t index = (v -> size(v) - 1) * v -> members.item_size;
+//            item = v -> at(v, index);
+//            void* destination = (char*) v -> members.items + index;
+//            const void* value = 0;
+//            memcpy(destination, value, v -> members.item_size);
             v -> members.size--;
+            v -> shrink(v, v -> size(v));
         }
     }
     return item;
@@ -167,12 +168,12 @@ size_t vresize(vector* v, size_t new_capacity)
     return status;
 }
 
-int vshrink(vector* v)
+size_t vshrink(vector* v, size_t new_capacity)
 {
     int status = FAILURE;
     if (v)
     {
-        status = update_capacity(v, v -> members.size);
+        status = update_capacity(v, new_capacity);
     }
     return status;
 }
@@ -195,7 +196,8 @@ void vector_init(vector *v, size_t item_size, size_t initialCapacity)
     v -> pop_back = vpop_back;
     v -> push_back = vpush_back;
     v -> resize = vresize;
-    v -> shrink = vshrink;
+    v -> shrink
+    = vshrink;
     v -> size = vsize;
  
     // Members
