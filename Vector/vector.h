@@ -18,7 +18,6 @@
 
 /**
  *
- * <type> pop_back(x) - removes the last element the vector
  * void insert(x, i) - inserts an element at the i-th position [0, N[
  * void erase_element(x) - deletes such element and adjusts indexes
  * void erase_index(i) - deletes element at i-th position
@@ -36,25 +35,26 @@ typedef struct SVector vector;
 struct SVector {
     members members;
     
-    void* (*at)(vector*, size_t);
+    void* (*at)(vector*, int);
     void* (*back)(vector*);
     size_t (*capacity)(vector*);
     void (*clear)(vector*);
     int (*empty)(vector*);
     void (*free)(vector*);
     void* (*front)(vector*);
+    size_t (*insert)(vector*, const void*, int);
     void* (*pop_back)(vector*);
     size_t (*push_back)(vector*, const void*);
-    size_t (*resize)(vector*, size_t);
-    size_t (*shrink)(vector*, size_t);
+    size_t (*resize)(vector*, int);
+    size_t (*shrink)(vector*, int);
     size_t (*size)(vector*);
 };
 
-int update_capacity(vector* v, size_t new_capacity)
+size_t update_capacity(vector* v, size_t new_capacity)
 {
     int status = FAILURE;
     void** temp = malloc(new_capacity * v -> members.item_size);
-    if (temp)
+    if (temp != NULL)
     {
         v -> members.capacity = new_capacity;
         for (int i = 0; i < v -> members.size; i++)
@@ -68,11 +68,11 @@ int update_capacity(vector* v, size_t new_capacity)
     return status;
 }
 
-void* vat(vector* v, size_t index)
+void* vat(vector* v, int index)
 {
-    if (v)
+    if (v != NULL)
     {
-        if (index < v -> members.size)
+        if (index >= 0 && index < v -> members.size)
         {
             return v -> members.items + index;
         }
@@ -82,7 +82,7 @@ void* vat(vector* v, size_t index)
 
 void* vback(vector* v)
 {
-    return v -> at(v, v -> size(v) - 1);
+    return v -> at(v, (int) v -> size(v) - 1);
 }
 
 size_t vcapacity(vector* v)
@@ -116,20 +116,29 @@ void* vfront(vector* v)
     return v -> at(v, 0);
 }
 
+size_t vinsert(vector* v, const void* item, int pos)
+{
+    int status = FAILURE;
+    if (v != NULL && item != NULL)
+    {
+        if (pos >= 0 && pos < v -> size(v))
+        {
+            v -> members.size++;
+        }
+    }
+    return status;
+}
+
 void* vpop_back(vector* v)
 {
     void* item = NULL;
-    if (v)
+    if (v != NULL)
     {
         if (v -> members.items != NULL)
         {
-//            size_t index = (v -> size(v) - 1) * v -> members.item_size;
-//            item = v -> at(v, index);
-//            void* destination = (char*) v -> members.items + index;
-//            const void* value = 0;
-//            memcpy(destination, value, v -> members.item_size);
+            item = v -> members.items + (v -> size(v) - 1);
             v -> members.size--;
-            v -> shrink(v, v -> size(v));
+            v -> shrink(v, (int) v -> size(v));
         }
     }
     return item;
@@ -138,11 +147,11 @@ void* vpop_back(vector* v)
 size_t vpush_back(vector* v, const void* value)
 {
     int status = FAILURE;
-    if (v)
+    if (v != NULL)
     {
         if (v -> members.size == v -> members.capacity)
         {
-            v -> resize(v, v -> members.size * 2);
+            v -> resize(v, (int) v -> members.size * 2);
             update_capacity(v, v -> members.capacity);
         }
 
@@ -157,10 +166,10 @@ size_t vpush_back(vector* v, const void* value)
     return status;
 }
 
-size_t vresize(vector* v, size_t new_capacity)
+size_t vresize(vector* v, int new_capacity)
 {
-    int status = FAILURE;
-    if (v)
+    size_t status = FAILURE;
+    if (v != NULL && new_capacity >= 0)
     {
         v -> members.capacity = new_capacity;
         status = update_capacity(v, v -> members.capacity);
@@ -168,10 +177,10 @@ size_t vresize(vector* v, size_t new_capacity)
     return status;
 }
 
-size_t vshrink(vector* v, size_t new_capacity)
+size_t vshrink(vector* v, int new_capacity)
 {
-    int status = FAILURE;
-    if (v)
+    size_t status = FAILURE;
+    if (v != NULL && new_capacity >= 0)
     {
         status = update_capacity(v, new_capacity);
     }
@@ -193,11 +202,11 @@ void vector_init(vector *v, size_t item_size, size_t initialCapacity)
     v -> empty = vempty;
     v -> free = vfree;
     v -> front = vfront;
+    v -> insert = vinsert;
     v -> pop_back = vpop_back;
     v -> push_back = vpush_back;
     v -> resize = vresize;
-    v -> shrink
-    = vshrink;
+    v -> shrink = vshrink;
     v -> size = vsize;
  
     // Members
@@ -219,5 +228,13 @@ void vector_init(vector *v, size_t item_size, size_t initialCapacity)
     {
         v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
     }
-    v -> members.items = malloc(v -> members.capacity * v -> members.item_size);
+
+    if (item_size > 0)
+    {
+        v -> members.items = malloc(v -> members.capacity * v -> members.item_size);
+    }
+    else
+    {
+        v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
+    }
 }
