@@ -21,6 +21,7 @@ int main()
 
     int var = 2;
     int* ptr_int = &var;
+    printf("Adding %d...\n", var);
     printf("Is push back ok?  %d\n", v.push_back(&v, (int*) ptr_int));
     printf("Current size:     %d\n", v.size(&v));
     printf("Current capacity: %d\n", v.capacity(&v));
@@ -29,6 +30,19 @@ int main()
     printf("Is vector empty:  %d\n\n", v.empty(&v));
 
     var = 4;
+    printf("Adding %d...\n", var);
+    printf("Is push back ok?  %d\n", v.push_back(&v, (int*) ptr_int));
+    printf("Current size:     %d\n", v.size(&v));
+    printf("Current capacity: %d\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n", *(int*) v.back(&v));
+    printf("Is vector empty:  %d\n", v.empty(&v));
+    printf("Is shrink ok?     %d\n\n", v.shrink(&v));
+
+    printf("Pop back:         %d\n\n", *(int*) v.pop_back(&v));
+
+    var = 8;
+    printf("Adding %d...\n", var);
     printf("Is push back ok?  %d\n", v.push_back(&v, (int*) ptr_int));
     printf("Current size:     %d\n", v.size(&v));
     printf("Current capacity: %d\n", v.capacity(&v));
@@ -36,10 +50,23 @@ int main()
     printf("Back:             %d\n", *(int*) v.back(&v));
     printf("Is vector empty:  %d\n\n", v.empty(&v));
 
-    //printf("Is pop back ok?   %d\n\n", *(int*) v.pop_back(&v));
+    var = 16;
+    printf("Adding %d...\n", var);
+    printf("Is insert ok?     %d\n", v.insert(&v, (int*) ptr_int, 1));
+    printf("Current size:     %d\n", v.size(&v));
+    printf("Current capacity: %d\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n", *(int*) v.back(&v));
+    printf("Is vector empty:  %d\n\n", v.empty(&v));
 
-    var = 8;
-    //printf("Is insert ok?     %d\n\n", v.insert(&v, (int*) ptr_int, 1));
+    var = 2;
+    printf("Removing %d...\n", var);
+    printf("Is erase_elem ok? %d\n", v.erase_element(&v, (int*) ptr_int));
+    printf("Current size:     %d\n", v.size(&v));
+    printf("Current capacity: %d\n", v.capacity(&v));
+    printf("Front:            %d\n", *(int*) v.front(&v));
+    printf("Back:             %d\n", *(int*) v.back(&v));
+    printf("Is vector empty:  %d\n\n", v.empty(&v));
 
     int i;
     for (i = 0; i < v.size(&v); i++)
