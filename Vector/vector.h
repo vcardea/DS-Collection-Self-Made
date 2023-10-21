@@ -13,11 +13,10 @@
 #define VECTOR_INIT_CAPACITY 1
 #define VECTOR_INIT_SIZE 0
 #define VECTOR_DEFAULT_ITEMSIZE 8
-#define SUCCESS 1
-#define FAILURE 0
+#define SUCCESS 0
+#define FAILURE 1
 
 /*
- * void erase_element(x) - deletes such element and adjusts indexes
  * void erase_index(i) - deletes element at i-th position
  */
 
@@ -68,7 +67,7 @@ struct SVector {
      *
      * @param v pointer to the vector
      */
-    void (*clear)(vector*);
+    int (*clear)(vector*);
 
     /**
      * Checks if the vector is empty
@@ -85,6 +84,15 @@ struct SVector {
      * @param element to delete
      */
     int (*erase_element)(vector*, const void*);
+
+    /**
+     * Deletes the element at the i-th position
+     *
+     * @param  v pointer to the vector
+     * @param  element to delete
+     * @return status
+     */
+    int (*erase_index)(vector*, int);
 
     /**
      * Clears the vector and resets initial size and capacity
@@ -225,12 +233,14 @@ int vcapacity(vector* v)
  *
  * @param v pointer to the vector
  */
-void vclear(vector* v)
+int vclear(vector* v)
 {
-    for (int i = 0; i < v -> members.size; ++i)
+    int status = FAILURE;
+    if (v != NULL)
     {
-        v -> members.items[i] = NULL;
+        status = v -> resize(v, 0);
     }
+    return status;
 }
 
 /**
@@ -285,6 +295,34 @@ int verase_element(vector* v, const void* element)
 }
 
 /**
+ * Deletes the element at the i-th position
+ *
+ * @param  v pointer to the vector
+ * @param  element to delete
+ * @return status
+*/
+int verase_index(vector* v, int index)
+{
+    int status = FAILURE;
+    if (v != NULL && index >= 0 && index < v -> size(v))
+    {
+        void* destination = NULL;
+        void* source = NULL;
+        size_t size = v -> members.item_size;
+        int i;
+        for (i = index; i < v -> size(v) - 1; ++i)
+        {
+            source = v -> members.items + (i + 1);
+            destination = v -> members.items + i;
+            memcpy(destination, source, size);
+        }
+        v -> resize(v, v -> size(v) - 1);
+        status = SUCCESS;
+    }
+    return status;
+}
+
+/**
  * Clears the vector and resets initial size and capacity
  *
  * @param v pointer to the vector
@@ -294,7 +332,6 @@ void vfree(vector* v)
     free(v -> members.items);
     v -> members.size = VECTOR_INIT_SIZE;
     v -> members.capacity = VECTOR_INIT_CAPACITY;
-    v -> members.items = NULL;
 }
 
 /**
@@ -407,7 +444,7 @@ int vresize(vector* v, int new_size)
     if (v != NULL && new_size >= 0)
     {
         v -> members.size = new_size;
-        status = update_capacity(v, new_size * 2);
+        status = update_capacity(v, new_size * 2 + VECTOR_INIT_CAPACITY);
     }
     return status;
 }
@@ -455,6 +492,7 @@ void vector_init(vector *v, int item_size, int initialCapacity)
     v -> clear = vclear;
     v -> empty = vempty;
     v -> erase_element = verase_element;
+    v -> erase_index = verase_index;
     v -> free = vfree;
     v -> front = vfront;
     v -> insert = vinsert;

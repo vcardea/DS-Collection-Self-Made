@@ -73,8 +73,10 @@ int main()
     {
         printf("v[%d] = %d\n", i, *(int*) v.at(&v, i));
     }
+    printf("\n");
 
-    v.clear(&v);
+    printf("Is clear ok?      %d\n\n", v.clear(&v));
+
     v.free(&v);
 
     return 0;
