@@ -13,12 +13,12 @@
 #define VECTOR_INIT_CAPACITY 1
 #define VECTOR_INIT_SIZE 0
 #define VECTOR_DEFAULT_ITEMSIZE 8
-#define SUCCESS 0
-#define FAILURE 1
+#define VECTOR_DEFAULT_TYPESIZE 8
 
-/*
- * void erase_index(i) - deletes element at i-th position
- */
+enum exit_codes {
+    SUCCESS,
+    FAILURE
+};
 
 /**
  * Members of the vector
@@ -27,6 +27,7 @@ typedef struct members {
     int size;
     int capacity;
     int item_size;
+    int type_size;
     void** items;
 } members;
 
@@ -36,6 +37,16 @@ typedef struct members {
 typedef struct SVector vector;
 struct SVector {
     members members;
+
+    /**
+     * Assigns a value to a specified index
+     *
+     * @param v pointer to the vector
+     * @param value to assign
+     * @param index where to assign
+     * @return status
+     */
+    int (*assign)(vector*, const void*, int);
 
     /**
      * Returns the i-th element
@@ -82,6 +93,7 @@ struct SVector {
      *
      * @param v pointer to the vector
      * @param element to delete
+     * @return status
      */
     int (*erase_element)(vector*, const void*);
 
@@ -89,10 +101,17 @@ struct SVector {
      * Deletes the element at the i-th position
      *
      * @param  v pointer to the vector
-     * @param  element to delete
+     * @param  index of the element to remove
      * @return status
      */
     int (*erase_index)(vector*, int);
+
+    /**
+     * Finds the first occurrence of a value within the vector
+     *
+     * @return index of the first value
+     */
+    int (*find)(vector*, const void*);
 
     /**
      * Clears the vector and resets initial size and capacity
@@ -108,6 +127,14 @@ struct SVector {
      * @return first element
      */
     void* (*front)(vector*);
+
+    /**
+     * Returns the size of an elements in bytes
+     *
+     * @param v pointer to the vector
+     * @return size of an element [bytes]
+     */
+    int (*get_item_size)(vector*);
 
     /**
      * Inserts an element at the i-th index
@@ -188,6 +215,30 @@ int update_capacity(vector* v, int new_capacity)
 }
 
 /**
+ * Assigns a value to a specified index
+ *
+ * @param v pointer to the vector
+ * @param value to assign
+ * @param index where to assign
+ * @return status
+ */
+int vassign(vector* v, const void* value, int index)
+{
+    int status = FAILURE;
+    if (v != NULL && value != NULL)
+    {
+        if (index >= 0 && index < v -> size(v))
+        {
+            void* destination = v -> members.items + index;
+            size_t size = v -> members.item_size;
+            memcpy(destination, value, size);
+            status = memcmp(destination, value, size);
+        }
+    }
+    return status;
+}
+
+/**
  * Returns the i-th element
  *
  * @param  v pointer to the vector
@@ -198,7 +249,7 @@ void* vat(vector* v, int index)
 {
     if (v != NULL)
     {
-        if (index >= 0 && index < v -> members.size)
+        if (index >= 0 && index < v -> size(v))
         {
             return v -> members.items + index;
         }
@@ -251,7 +302,12 @@ int vclear(vector* v)
  */
 int vempty(vector* v)
 {
-    return (v -> members.size == 0);
+    int bool = 0;
+    if (v != NULL)
+    {
+        bool = (v -> size(v) == 0);
+    }
+    return bool;
 }
 
 /**
@@ -259,34 +315,24 @@ int vempty(vector* v)
  *
  * @param v pointer to the vector
  * @param element to delete
+ * @return status
  */
 int verase_element(vector* v, const void* element)
 {
     int status = FAILURE;
-    if (v != NULL && element != NULL)
+    if (v != NULL && element != NULL && !v -> empty(v))
     {
-        size_t size = v -> members.size;
-        int i = 0;
-        do {
-            if (memcmp(v -> at(v, i), element, size) == 0)
-            {
-                status = SUCCESS;
-            }
-            else
-            {
-                ++i;
-            }
-        } while (i < v -> size(v) && !status);
-
-        if (status)
+        int index = v -> find(v, element);
+        if (index != -1)
         {
             void* source = NULL;
             void* destination = NULL;
-            for (i = i + 1; i < v -> size(v); ++i)
+            int i;
+            for (i = index; i < v -> size(v); ++i)
             {
                 source = v -> members.items + i;
                 destination = v -> members.items + (i - 1);
-                memcpy(destination, source, size);
+                memcpy(destination, source, v -> get_item_size(v));
             }
             status = v -> resize(v, v -> size(v) - 1);
         }
@@ -298,7 +344,7 @@ int verase_element(vector* v, const void* element)
  * Deletes the element at the i-th position
  *
  * @param  v pointer to the vector
- * @param  element to delete
+ * @param  index of the element to remove
  * @return status
 */
 int verase_index(vector* v, int index)
@@ -323,6 +369,36 @@ int verase_index(vector* v, int index)
 }
 
 /**
+ * Finds the first occurrence of a value within the vector
+ *
+ * @return index of the first value
+ */
+int vfind(vector* v, const void* value)
+{
+    int index = -1;
+    if (v != NULL && value != NULL)
+    {
+        size_t size = v->members.item_size;
+        int found = 0;
+        int i = 0;
+        while (i < v->size(v) && !found)
+        {
+            found = (memcmp(v->at(v, i), value, size) == 0);
+            if (!found)
+            {
+                i++;
+            }
+        }
+
+        if (found)
+        {
+            index = i;
+        }
+    }
+    return index;
+}
+
+/**
  * Clears the vector and resets initial size and capacity
  *
  * @param v pointer to the vector
@@ -343,6 +419,22 @@ void vfree(vector* v)
 void* vfront(vector* v)
 {
     return v -> at(v, 0);
+}
+
+/**
+ * Returns the size of an elements in bytes
+ *
+ * @param v pointer to the vector
+ * @return size of an element [bytes]
+ */
+int vget_item_size(vector* v)
+{
+    int item_size = -1;
+    if (v != NULL)
+    {
+        item_size = v -> members.item_size;
+    }
+    return item_size;
 }
 
 /**
@@ -423,7 +515,7 @@ int vpush_back(vector* v, const void* value)
         if (v -> members.items != NULL)
         {
             void* position = (char*) v -> members.items + (size * v -> members.item_size);
-            memcpy(position, value, sizeof(value));
+            memcpy(position, value, v -> get_item_size(v));
             v -> members.size++;
             status = SUCCESS;
         }
@@ -483,51 +575,66 @@ int vsize(vector* v)
  * @param item_size size of the elements
  * @param initialCapacity allocated amount memory for elements
  */
-void vector_init(vector *v, int item_size, int initialCapacity)
+void vector_init(vector *v, int item_size, int type_size, int initialCapacity)
 {
-    // Methods
-    v -> at = vat;
-    v -> back = vback;
-    v -> capacity = vcapacity;
-    v -> clear = vclear;
-    v -> empty = vempty;
-    v -> erase_element = verase_element;
-    v -> erase_index = verase_index;
-    v -> free = vfree;
-    v -> front = vfront;
-    v -> insert = vinsert;
-    v -> pop_back = vpop_back;
-    v -> push_back = vpush_back;
-    v -> resize = vresize;
-    v -> shrink = vshrink;
-    v -> size = vsize;
- 
-    // Members
-    v -> members.size = VECTOR_INIT_SIZE;
-    if (initialCapacity > 0)
+    if (v != NULL)
     {
-        v -> members.capacity = initialCapacity;
-    }
-    else
-    {
-        v -> members.capacity = VECTOR_INIT_CAPACITY;
-    }
+        // Methods
+        v -> assign = vassign;
+        v -> at = vat;
+        v -> back = vback;
+        v -> capacity = vcapacity;
+        v -> clear = vclear;
+        v -> empty = vempty;
+        v -> erase_element = verase_element;
+        v -> erase_index = verase_index;
+        v -> find = vfind;
+        v -> free = vfree;
+        v -> front = vfront;
+        v -> get_item_size = vget_item_size;
+        v -> insert = vinsert;
+        v -> pop_back = vpop_back;
+        v -> push_back = vpush_back;
+        v -> resize = vresize;
+        v -> shrink = vshrink;
+        v -> size = vsize;
 
-    if (item_size > 0)
-    {
-        v -> members.item_size = item_size;
-    }
-    else
-    {
-        v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
-    }
+        // Members
+        if (item_size > 0)
+        {
+            v -> members.item_size = item_size;
+        }
+        else
+        {
+            v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
+        }
 
-    if (item_size > 0)
-    {
-        v -> members.items = malloc(v -> members.capacity * v -> members.item_size);
-    }
-    else
-    {
-        v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
+        if (type_size > 0)
+        {
+            v -> members.type_size = type_size;
+        }
+        else
+        {
+            v -> members.type_size = VECTOR_DEFAULT_TYPESIZE;
+        }
+
+        if (item_size > 0)
+        {
+            v -> members.items = malloc(v -> members.capacity * v -> members.item_size);
+        }
+        else
+        {
+            v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
+        }
+
+        v -> members.size = VECTOR_INIT_SIZE;
+        if (initialCapacity > 0)
+        {
+            v -> members.capacity = initialCapacity;
+        }
+        else
+        {
+            v -> members.capacity = VECTOR_INIT_CAPACITY;
+        }
     }
 }
