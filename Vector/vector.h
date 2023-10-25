@@ -7,21 +7,19 @@
  * @copyright Copyright (c) 2023
  */
 
+#ifndef VECTOR_H
+#define VECTOR_H
+
+#pragma once
+
 #include <stdlib.h>
 #include <string.h>
+#include "./utils.h"
 
 #define VECTOR_INIT_CAPACITY 1
 #define VECTOR_INIT_SIZE 0
 #define VECTOR_DEFAULT_ITEMSIZE 8
 #define VECTOR_DEFAULT_TYPESIZE 8
-
-/**
- * Exit codes of functions
- */
-enum exit_codes {
-    SUCCESS,
-    FAILURE
-};
 
 /**
 * Members of the vector
@@ -100,6 +98,7 @@ struct SVector {
      * Deletes all elements. Doesn't modify size and capacity
      *
      * @param v pointer to the vector
+     * @return status
      */
     int (*clear)(vector*);
 
@@ -132,6 +131,8 @@ struct SVector {
     /**
      * Finds the first occurrence of a value within the vector
      *
+     * @param v pointer to the vector
+     * @param value to find
      * @return index of the first value
      */
     int (*find)(vector*, const void*);
@@ -256,7 +257,7 @@ int update_capacity(vector* v, int new_capacity)
 int vassign(vector* v, const void* value, int index)
 {
     int status = FAILURE;
-    if (v != NULL && value != NULL)
+    if (v != NULL && v -> members.items != NULL && value != NULL)
     {
         if (index >= 0 && index < v -> size(v))
         {
@@ -278,7 +279,7 @@ int vassign(vector* v, const void* value, int index)
  */
 void* vat(vector* v, int index)
 {
-    if (v != NULL)
+    if (v != NULL && v -> members.items != NULL)
     {
         if (index >= 0 && index < v -> size(v))
         {
@@ -297,7 +298,7 @@ void* vat(vector* v, int index)
 void* vback(vector* v)
 {
     void* value = NULL;
-    if (v != NULL)
+    if (v != NULL && v -> members.items != NULL)
     {
         value = v -> at(v, v -> size(v) - 1);
     }
@@ -312,7 +313,7 @@ void* vback(vector* v)
  */
 int vcapacity(vector* v)
 {
-    int capacity = -1;
+    int capacity = VALUE_ERROR;
     if (v != NULL)
     {
         capacity = v -> members.capacity;
@@ -324,11 +325,12 @@ int vcapacity(vector* v)
  * Deletes all elements. Doesn't modify size and capacity
  *
  * @param v pointer to the vector
+ * @return status
  */
 int vclear(vector* v)
 {
     int status = FAILURE;
-    if (v != NULL)
+    if (v != NULL && v -> members.items != NULL)
     {
         status = v -> resize(v, 0);
     }
@@ -343,7 +345,7 @@ int vclear(vector* v)
  */
 int vempty(vector* v)
 {
-    int bool = 0;
+    int bool = false;
     if (v != NULL)
     {
         bool = (v -> size(v) == 0);
@@ -361,10 +363,10 @@ int vempty(vector* v)
 int verase_element(vector* v, const void* element)
 {
     int status = FAILURE;
-    if (v != NULL && element != NULL && !v -> empty(v))
+    if (v != NULL && v -> members.items != NULL && element != NULL)
     {
         int index = v -> find(v, element);
-        if (index != -1)
+        if (index != VALUE_ERROR)
         {
             void* source = NULL;
             void* destination = NULL;
@@ -391,7 +393,7 @@ int verase_element(vector* v, const void* element)
 int verase_index(vector* v, int index)
 {
     int status = FAILURE;
-    if (v != NULL && index >= 0 && index < v -> size(v))
+    if (v != NULL && v -> members.items != NULL && index >= 0 && index < v -> size(v))
     {
         void* destination = NULL;
         void* source = NULL;
@@ -412,12 +414,14 @@ int verase_index(vector* v, int index)
 /**
  * Finds the first occurrence of a value within the vector
  *
+ * @param v pointer to the vector
+ * @param value to find
  * @return index of the first value
  */
 int vfind(vector* v, const void* value)
 {
-    int index = -1;
-    if (v != NULL && value != NULL)
+    int index = VALUE_ERROR;
+    if (v != NULL && v -> members.items != NULL && value != NULL)
     {
         size_t size = v -> get_type_size(v);
         int found = 0;
@@ -426,7 +430,7 @@ int vfind(vector* v, const void* value)
         while (i < v -> size(v) && !found)
         {
             item = v -> members.items + i;
-            found = (memcmp(item, value, size) == 0);
+            found = (memcmp(item, value, size) == false);
             ++i;
         }
 
@@ -445,9 +449,12 @@ int vfind(vector* v, const void* value)
  */
 void vfree(vector* v)
 {
-    free(v -> members.items);
-    v -> members.size = VECTOR_INIT_SIZE;
-    v -> members.capacity = VECTOR_INIT_CAPACITY;
+    if (v != NULL)
+    {
+        free(v -> members.items);
+        v -> members.size = VECTOR_INIT_SIZE;
+        v -> members.capacity = VECTOR_INIT_CAPACITY;
+    }
 }
 
 /**
@@ -459,7 +466,7 @@ void vfree(vector* v)
 void* vfront(vector* v)
 {
     void* value = NULL;
-    if (v != NULL && !v -> empty(v))
+    if (v != NULL)
     {
         value = v -> at(v, 0);
     }
@@ -474,7 +481,7 @@ void* vfront(vector* v)
  */
 int vget_item_size(vector* v)
 {
-    int item_size = -1;
+    int item_size = VALUE_ERROR;
     if (v != NULL)
     {
         item_size = v -> members.item_size;
@@ -490,7 +497,7 @@ int vget_item_size(vector* v)
  */
 int vget_type_size(vector* v)
 {
-    int type_size = -1;
+    int type_size = VALUE_ERROR;
     if (v != NULL)
     {
         type_size = v -> members.type_size;
@@ -543,14 +550,11 @@ int vinsert(vector* v, const void* item, int pos)
 void* vpop_back(vector* v)
 {
     void* item = NULL;
-    if (v != NULL)
+    if (v != NULL && v -> members.items != NULL)
     {
-        if (v -> members.items != NULL)
-        {
-            int size = v -> size(v) - 1;
-            item = v -> members.items + size;
-            v -> resize(v, size);
-        }
+        int size = v -> size(v) - 1;
+        item = v -> members.items + size;
+        v -> resize(v, size);
     }
     return item;
 }
@@ -625,7 +629,7 @@ int vshrink(vector* v)
  */
 int vsize(vector* v)
 {
-    int size = -1;
+    int size = VALUE_ERROR;
     if (v != NULL)
     {
         size = v -> members.size;
@@ -701,3 +705,5 @@ void vector_init(vector *v, int item_size, int type_size, int initialCapacity)
         }
     }
 }
+
+#endif
