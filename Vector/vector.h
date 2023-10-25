@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "./utils.h"
+#include "../utils.h"
 
 #define VECTOR_INIT_CAPACITY 1
 #define VECTOR_INIT_SIZE 0
