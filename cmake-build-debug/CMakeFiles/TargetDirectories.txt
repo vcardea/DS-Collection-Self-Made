@@ -1,3 +1,0 @@
-C:/Users/Vincenzo/Documents/GitHub/DSA-Collection-Self-Made/cmake-build-debug/CMakeFiles/DSA_Collection_Self_Made.dir
-C:/Users/Vincenzo/Documents/GitHub/DSA-Collection-Self-Made/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/Vincenzo/Documents/GitHub/DSA-Collection-Self-Made/cmake-build-debug/CMakeFiles/rebuild_cache.dir
