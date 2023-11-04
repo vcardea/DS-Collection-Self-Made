@@ -1,3 +1,12 @@
+/**
+ * @file    vector.h - Dynamic array in C
+ * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
+ * @version 0.2
+ * @date    2023-11-04
+ *
+ * @copyright Copyright (c) 2023
+ */
+
 #include <stdio.h>
 #include "./vector.h"
 
@@ -6,14 +15,13 @@ int main()
     vector v;
     vector_init(&v, sizeof(int*), sizeof(int), 1);
 
-    printf("Initial size:             %3d\n", v.size(&v));
-    printf("Initial capacity:         %3d\n", v.capacity(&v));
-    printf("Empty?                    %3d\n", v.empty(&v));
-    printf("item_size:                %3d\n", v.get_item_size(&v));
-    printf("type_size:                %3d\n", v.get_type_size(&v));
+    printf("Initial size:             %5d\n", v.size(&v));
+    printf("Initial capacity:         %5d\n", v.capacity(&v));
+    printf("Empty?                    %5d\n", v.empty(&v));
+    printf("item_size:                %5d\n", v.get_item_size(&v));
+    printf("type_size:                %5d\n", v.get_type_size(&v));
 
     int i;
-    int* ptr_int = &i;
     int status;
     printf("\n");
     for (i = 1; i <= 6; ++i)
@@ -25,34 +33,34 @@ int main()
 
     // Operations
     status = *(int*) v.pop_back(&v);
-    printf("Pop Back Status:          %3d\n", status);
+    printf("Pop Back Status:          %5d\n", status);
 
     i = 104;
     status = v.insert(&v, &i, 0);
-    printf("Insert %d Status:        %3d\n", i, status);
+    printf("Insert %d Status:        %5d\n", i, status);
 
     i = 4;
     status = v.find(&v, &i);
-    printf("Find %d Index:             %3d\n", i, status);
+    printf("Find %d Index:             %5d\n", i, status);
 
     i = 4;
     status = v.erase_element(&v, &i);
-    printf("Erase Element %d Status:   %3d\n", i, status);
+    printf("Erase Element %d Status:   %5d\n", i, status);
 
     i = 2;
     status = v.erase_index(&v, i);
-    printf("Erase Index %2d Status:    %3d\n", i, status);
+    printf("Erase Index %d Status:     %5d\n", i, status);
 
     i = 42;
     status = v.assign(&v, &i, v.size(&v) - 1);
-    printf("Assign Status:            %3d\n", status);
+    printf("Assign Status:            %5d\n", status);
 
-    printf("Empty?                    %3d\n", v.empty(&v));
-    printf("Front:                    %3d\n", *((int*) v.front(&v)));
-    printf("Back:                     %3d\n", *((int*) v.back(&v)));
-    printf("Shrink Status:            %3d\n", v.shrink(&v));
-    printf("Current size:             %3d\n", v.size(&v));
-    printf("Current capacity:         %3d\n", v.capacity(&v));
+    printf("Empty?                    %5d\n", v.empty(&v));
+    printf("Front:                    %5d\n", *((int*) v.front(&v)));
+    printf("Back:                     %5d\n", *((int*) v.back(&v)));
+    printf("Shrink Status:            %5d\n", v.shrink(&v));
+    printf("Current size:             %5d\n", v.size(&v));
+    printf("Current capacity:         %5d\n", v.capacity(&v));
 
     printf("\n");
     for (i = 0; i < v.size(&v); ++i)
@@ -61,7 +69,7 @@ int main()
     }
     printf("\n");
 
-    printf("Clear Status:             %3d\n", v.clear(&v));
+    printf("Clear Status:             %5d\n", v.clear(&v));
 
     v.free(&v);
 

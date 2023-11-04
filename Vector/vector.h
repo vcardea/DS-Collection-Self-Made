@@ -1,8 +1,8 @@
 /**
  * @file    vector.h - Dynamic array in C
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
- * @version 0.1
- * @date    2023-10-06
+ * @version 0.2
+ * @date    2023-11-04
  * 
  * @copyright Copyright (c) 2023
  */
@@ -57,6 +57,9 @@ typedef struct members {
  */
 typedef struct SVector vector;
 struct SVector {
+    /**
+     * Contains attributes of the vector
+     */
     members members;
 
     /**
@@ -262,9 +265,15 @@ int vassign(vector* v, const void* value, int index)
         if (index >= 0 && index < v -> size(v))
         {
             void* destination = v -> members.items + index;
-            size_t size = v -> get_item_size(v);
-            memcpy(destination, value, size);
-            status = memcmp(destination, value, size);
+            int type_size = v -> get_type_size(v);
+            if (destination != NULL && type_size != -1)
+            {
+                status = SUCCESS;
+                //memcpy(destination, value, type_size);
+                status |= copy(destination, value, type_size);
+                //status = memcmp(destination, value, size);
+                status |= compare(destination, value, type_size);
+            }
         }
     }
     return status;
@@ -370,14 +379,20 @@ int verase_element(vector* v, const void* element)
         {
             void* source = NULL;
             void* destination = NULL;
-            int i;
-            for (i = index + 1; i < v -> size(v); ++i)
+            int type_size = v -> get_type_size(v);
+            if (type_size != -1)
             {
-                source = v -> members.items + i;
-                destination = v -> members.items + (i - 1);
-                memcpy(destination, source, v -> get_item_size(v));
+                status = SUCCESS;
+                int i;
+                for (i = index + 1; i < v -> size(v); ++i)
+                {
+                    source = v -> members.items + i;
+                    destination = v -> members.items + (i - 1);
+                    //memcpy(destination, source, type_size);
+                    status |= copy(destination, source, type_size);
+                }
+                status |= v -> resize(v, v -> size(v) - 1);
             }
-            status = v -> resize(v, v -> size(v) - 1);
         }
     }
     return status;
@@ -393,20 +408,27 @@ int verase_element(vector* v, const void* element)
 int verase_index(vector* v, int index)
 {
     int status = FAILURE;
-    if (v != NULL && v -> members.items != NULL && index >= 0 && index < v -> size(v))
+    if (v != NULL && v -> members.items != NULL)
     {
-        void* destination = NULL;
-        void* source = NULL;
-        size_t size = v -> get_item_size(v);
-        int i;
-        for (i = index; i < v -> size(v) - 1; ++i)
+        if (index >= 0 && index < v -> size(v))
         {
-            source = v -> members.items + (i + 1);
-            destination = v -> members.items + i;
-            memcpy(destination, source, size);
+            void* destination = NULL;
+            void* source = NULL;
+            int type_size = v -> get_type_size(v);
+            if (type_size != -1)
+            {
+                status = SUCCESS;
+                int i;
+                for (i = index; i < v -> size(v) - 1; ++i)
+                {
+                    source = v -> members.items + (i + 1);
+                    destination = v -> members.items + i;
+                    //memcpy(destination, source, type_size);
+                    status |= copy(destination, source, type_size);
+                }
+                status |= v -> resize(v, v -> size(v) - 1);
+            }
         }
-        v -> resize(v, v -> size(v) - 1);
-        status = SUCCESS;
     }
     return status;
 }
@@ -423,20 +445,24 @@ int vfind(vector* v, const void* value)
     int index = VALUE_ERROR;
     if (v != NULL && v -> members.items != NULL && value != NULL)
     {
-        size_t size = v -> get_type_size(v);
-        int found = 0;
-        int i = 0;
-        void* item = NULL;
-        while (i < v -> size(v) && !found)
+        int type_size = v -> get_type_size(v);
+        if (type_size != -1)
         {
-            item = v -> members.items + i;
-            found = (memcmp(item, value, size) == false);
-            ++i;
-        }
+            int found = false;
+            void* item = NULL;
+            int i = 0;
+            while (i < v -> size(v) && !found)
+            {
+                item = v -> members.items + i;
+                //found = (memcmp(item, value, size) == 0);
+                found = (compare(item, value, type_size) == 0);
+                ++i;
+            }
 
-        if (found)
-        {
-            index = i - 1;
+            if (found)
+            {
+                index = i - 1;
+            }
         }
     }
     return index;
@@ -524,18 +550,22 @@ int vinsert(vector* v, const void* item, int pos)
 
             void* source = NULL;
             void* destination = NULL;
-            size_t size = v -> get_item_size(v);
-            int i;
-            for (i = v -> size(v) - 1; i >= pos; --i)
+            int type_size = v -> get_type_size(v);
+            if (type_size != -1)
             {
-                source = v -> members.items + i;
-                destination = v -> members.items + (i + 1);
-                memcpy(destination, source, size);
+                status = SUCCESS;
+                int i;
+                for (i = v -> size(v) - 1; i >= pos; --i)
+                {
+                    source = v -> members.items + i;
+                    destination = v -> members.items + (i + 1);
+                    //memcpy(destination, source, type_size);
+                    status |= copy(destination, source, type_size);
+                }
+                destination = v -> members.items + pos;
+                //memcpy(destination, item, type_size);
+                status |= copy(destination, item, type_size);
             }
-            destination = v -> members.items + pos;
-            memcpy(destination, item, size);
-
-            status = SUCCESS;
         }
     }
     return status;
@@ -569,15 +599,19 @@ void* vpop_back(vector* v)
 int vpush_back(vector* v, const void* value)
 {
     int status = FAILURE;
-    if (v != NULL)
+    if (v != NULL && value != NULL)
     {
         int size = v -> size(v);
         status = v -> resize(v, size + 1);
         if (v -> members.items != NULL && !status)
         {
-            void* position = (char*) v -> members.items + (size * v -> get_item_size(v));
-            memcpy(position, value, v -> get_item_size(v));
             status = SUCCESS;
+            void* position = (char*) v -> members.items + (size * v -> get_item_size(v));
+            if (position != NULL)
+            {
+                //memcpy(position, value, v -> get_item_size(v));
+                status |= copy(position, value, v -> get_type_size(v));
+            }
         }
         else
         {
