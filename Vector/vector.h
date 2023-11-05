@@ -288,14 +288,15 @@ int vassign(vector* v, const void* value, int index)
  */
 void* vat(vector* v, int index)
 {
+    void* value = NULL;
     if (v != NULL && v -> members.items != NULL)
     {
         if (index >= 0 && index < v -> size(v))
         {
-            return v -> members.items + index;
+            value = v -> members.items + index;
         }
     }
-    return NULL;
+    return value;
 }
 
 /**
