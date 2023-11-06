@@ -2,7 +2,7 @@
  * @file    vector.h - Dynamic array in C
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
  * @version 0.2
- * @date    2023-11-04
+ * @date    2023-11-06
  * 
  * @copyright Copyright (c) 2023
  */
@@ -13,7 +13,7 @@
 #pragma once
 
 #include <stdlib.h>
-#include <string.h>
+#include <limits.h>
 #include "../utils.h"
 
 #define VECTOR_INIT_CAPACITY 1
@@ -614,10 +614,6 @@ int vpush_back(vector* v, const void* value)
                 status |= copy(position, value, v -> get_type_size(v));
             }
         }
-        else
-        {
-            status = FAILURE;
-        }
     }
     return status;
 }
@@ -659,7 +655,7 @@ int vshrink(vector* v)
 /**
  * Returns the current size
  *
- * @param v v pointer to the vector
+ * @param v pointer to the vector
  * @return current size
  */
 int vsize(vector* v)
@@ -679,7 +675,7 @@ int vsize(vector* v)
  * @param item_size size of the elements
  * @param initialCapacity allocated amount memory for elements
  */
-void vector_init(vector *v, int item_size, int type_size, int initialCapacity)
+void vector_init(vector *v, long long item_size, long long type_size, long long initialCapacity)
 {
     if (v != NULL)
     {
@@ -707,7 +703,7 @@ void vector_init(vector *v, int item_size, int type_size, int initialCapacity)
         // Members
         v -> members.size = VECTOR_INIT_SIZE;
 
-        if (item_size > 0)
+        if (item_size > 0 && item_size <= INT_MAX)
         {
             v -> members.item_size = item_size;
         }
@@ -716,16 +712,16 @@ void vector_init(vector *v, int item_size, int type_size, int initialCapacity)
             v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
         }
 
-        if (type_size > 0)
+        if (type_size > 0 && type_size <= INT_MAX)
         {
             v -> members.type_size = type_size;
         }
         else
         {
-            v -> members.type_size = VECTOR_DEFAULT_TYPESIZE;
+            v -> members.type_size = sizeof(type_size);
         }
 
-        if (initialCapacity > 0)
+        if (initialCapacity > 0 && initialCapacity <= INT_MAX)
         {
             v -> members.capacity = initialCapacity;
         }
@@ -734,10 +730,13 @@ void vector_init(vector *v, int item_size, int type_size, int initialCapacity)
             v -> members.capacity = VECTOR_INIT_CAPACITY;
         }
 
-        if (v -> members.capacity > 0 && v -> members.type_size)
+        long long size = v -> size(v);
+        if (size > v -> capacity(v))
         {
-            v -> members.items = malloc(v -> members.capacity * v -> members.item_size);
+            v -> members.capacity = size;
         }
+
+        v -> members.items = malloc(v -> members.capacity * v -> members.item_size);
     }
 }
 
