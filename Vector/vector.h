@@ -162,8 +162,9 @@ struct SVector {
      * Clears the vector and resets initial size and capacity
      *
      * @param v pointer to the vector
+     * @return status
      */
-    void (*free)(vector*);
+    int (*free)(vector*);
 
     /**
      * Returns the first element
@@ -279,9 +280,9 @@ int update_capacity(vector* v, int new_capacity)
 int vassign(vector* v, const void* value, int index)
 {
     int status = FAILURE;
-    if (v != NULL && v -> members.items != NULL && value != NULL)
+    if (v != NULL)
     {
-        if (index >= 0 && index < v -> size(v))
+        if (v -> members.items != NULL && value != NULL && index >= 0 && index < v -> size(v))
         {
             void* destination = v -> members.items + index;
             int type_size = v -> get_type_size(v);
@@ -308,9 +309,9 @@ int vassign(vector* v, const void* value, int index)
 void* vat(vector* v, int index)
 {
     void* value = NULL;
-    if (v != NULL && v -> members.items != NULL)
+    if (v != NULL)
     {
-        if (index >= 0 && index < v -> size(v))
+        if (v -> members.items != NULL && index >= 0 && index < v -> size(v))
         {
             value = v -> members.items + index;
         }
@@ -327,9 +328,12 @@ void* vat(vector* v, int index)
 void* vback(vector* v)
 {
     void* value = NULL;
-    if (v != NULL && v -> members.items != NULL)
+    if (v != NULL)
     {
-        value = v -> at(v, v -> size(v) - 1);
+        if (v -> members.items != NULL)
+        {
+            value = v -> at(v, v -> size(v) - 1);
+        }
     }
     return value;
 }
@@ -359,9 +363,12 @@ int vcapacity(vector* v)
 int vclear(vector* v)
 {
     int status = FAILURE;
-    if (v != NULL && v -> members.items != NULL)
+    if (v != NULL)
     {
-        status = v -> resize(v, 0);
+        if (v -> members.items != NULL)
+        {
+            status = v -> resize(v, 0);
+        }
     }
     return status;
 }
@@ -422,26 +429,29 @@ int vempty(vector* v)
 int verase_element(vector* v, const void* element)
 {
     int status = FAILURE;
-    if (v != NULL && v -> members.items != NULL && element != NULL)
+    if (v != NULL)
     {
-        int index = v -> find(v, element);
-        if (index != VALUE_ERROR)
+        if (v -> members.items != NULL && element != NULL)
         {
-            void* source = NULL;
-            void* destination = NULL;
-            int type_size = v -> get_type_size(v);
-            if (type_size != -1)
+            int index = v -> find(v, element);
+            if (index != VALUE_ERROR)
             {
-                status = SUCCESS;
-                int i;
-                for (i = index + 1; i < v -> size(v); ++i)
+                void* source = NULL;
+                void* destination = NULL;
+                int type_size = v -> get_type_size(v);
+                if (type_size != -1)
                 {
-                    source = v -> members.items + i;
-                    destination = v -> members.items + (i - 1);
-                    //memcpy(destination, source, type_size);
-                    status |= copy(destination, source, type_size);
+                    status = SUCCESS;
+                    int i;
+                    for (i = index + 1; i < v -> size(v); ++i)
+                    {
+                        source = v -> members.items + i;
+                        destination = v -> members.items + (i - 1);
+                        //memcpy(destination, source, type_size);
+                        status |= copy(destination, source, type_size);
+                    }
+                    status |= v -> resize(v, v -> size(v) - 1);
                 }
-                status |= v -> resize(v, v -> size(v) - 1);
             }
         }
     }
@@ -458,9 +468,9 @@ int verase_element(vector* v, const void* element)
 int verase_index(vector* v, int index)
 {
     int status = FAILURE;
-    if (v != NULL && v -> members.items != NULL)
+    if (v != NULL)
     {
-        if (index >= 0 && index < v -> size(v))
+        if (v -> members.items != NULL && index >= 0 && index < v -> size(v))
         {
             void* destination = NULL;
             void* source = NULL;
@@ -521,25 +531,28 @@ int vfill(vector* v, const void* value)
 int vfind(vector* v, const void* value)
 {
     int index = VALUE_ERROR;
-    if (v != NULL && v -> members.items != NULL && value != NULL)
+    if (v != NULL)
     {
-        int type_size = v -> get_type_size(v);
-        if (type_size != -1)
+        if (v -> members.items != NULL && value != NULL)
         {
-            int found = false;
-            void* item = NULL;
-            int i = 0;
-            while (i < v -> size(v) && !found)
+            int type_size = v -> get_type_size(v);
+            if (type_size != -1)
             {
-                item = v -> members.items + i;
-                //found = (memcmp(item, value, size) == 0);
-                found = (compare(item, value, type_size) == 0);
-                ++i;
-            }
+                int found = false;
+                void* item = NULL;
+                int i = 0;
+                while (i < v -> size(v) && !found)
+                {
+                    item = v -> members.items + i;
+                    //found = (memcmp(item, value, size) == 0);
+                    found = (compare(item, value, type_size) == 0);
+                    ++i;
+                }
 
-            if (found)
-            {
-                index = i - 1;
+                if (found)
+                {
+                    index = i - 1;
+                }
             }
         }
     }
@@ -550,15 +563,19 @@ int vfind(vector* v, const void* value)
  * Clears the vector and resets initial size and capacity
  *
  * @param v pointer to the vector
+ * @return status
  */
-void vfree(vector* v)
+int vfree(vector* v)
 {
+    int status = FAILURE;
     if (v != NULL)
     {
+        status = SUCCESS;
         free(v -> members.items);
         v -> members.size = VECTOR_INIT_SIZE;
         v -> members.capacity = VECTOR_INIT_CAPACITY;
     }
+    return status;
 }
 
 /**
@@ -620,9 +637,9 @@ int vget_type_size(vector* v)
 int vinsert(vector* v, const void* item, int pos)
 {
     int status = FAILURE;
-    if (v != NULL && item != NULL)
+    if (v != NULL)
     {
-        if (pos >= 0 && pos < v -> size(v))
+        if (item != NULL && pos >= 0 && pos < v -> size(v))
         {
             v -> resize(v, v -> size(v) + 1);
 
@@ -658,11 +675,14 @@ int vinsert(vector* v, const void* item, int pos)
 void* vpop_back(vector* v)
 {
     void* item = NULL;
-    if (v != NULL && v -> members.items != NULL)
+    if (v != NULL)
     {
-        int size = v -> size(v) - 1;
-        item = v -> members.items + size;
-        v -> resize(v, size);
+        if (v -> members.items != NULL)
+        {
+            int size = v -> size(v) - 1;
+            item = v -> members.items + size;
+            v -> resize(v, size);
+        }
     }
     return item;
 }
@@ -677,18 +697,21 @@ void* vpop_back(vector* v)
 int vpush_back(vector* v, const void* value)
 {
     int status = FAILURE;
-    if (v != NULL && value != NULL)
+    if (v != NULL)
     {
-        int size = v -> size(v);
-        status = v -> resize(v, size + 1);
-        if (v -> members.items != NULL && !status)
+        if (value != NULL)
         {
-            status = SUCCESS;
-            void* position = (char*) v -> members.items + (size * v -> get_item_size(v));
-            if (position != NULL)
+            int size = v -> size(v);
+            status = v -> resize(v, size + 1);
+            if (v -> members.items != NULL && !status)
             {
-                //memcpy(position, value, v -> get_item_size(v));
-                status |= copy(position, value, v -> get_type_size(v));
+                status = SUCCESS;
+                void* position = (char*) v -> members.items + (size * v -> get_item_size(v));
+                if (position != NULL)
+                {
+                    //memcpy(position, value, v -> get_item_size(v));
+                    status |= copy(position, value, v -> get_type_size(v));
+                }
             }
         }
     }
@@ -705,10 +728,13 @@ int vpush_back(vector* v, const void* value)
 int vresize(vector* v, int new_size)
 {
     int status = FAILURE;
-    if (v != NULL && new_size >= 0)
+    if (v != NULL)
     {
-        v -> members.size = new_size;
-        status = update_capacity(v, new_size * 2 + VECTOR_INIT_CAPACITY);
+        if (new_size >= 0)
+        {
+            v -> members.size = new_size;
+            status = update_capacity(v, new_size * 2 + VECTOR_INIT_CAPACITY);
+        }
     }
     return status;
 }
