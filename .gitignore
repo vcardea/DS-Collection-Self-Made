@@ -1,2 +1,6 @@
+# Folders
+.idea/
+cmake-build-debug/
 
-Vector/vector_test_int.exe
+# Executables
+*.exe
