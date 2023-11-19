@@ -1,7 +1,7 @@
 /**
  * @file    vector.h - Dynamic array in C
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
- * @version 0.2
+ * @version 0.3
  * @date    2023-11-06
  *
  * @copyright Copyright (c) 2023
@@ -13,7 +13,7 @@
 int main()
 {
     vector v;
-    vector_init(&v, sizeof(int*), sizeof(int), 1);
+    vector_init(&v, sizeof(int), 0, 1);
 
     printf("Initial size:             %5d\n", v.size(&v));
     printf("Initial capacity:         %5d\n", v.capacity(&v));
@@ -44,8 +44,16 @@ int main()
     printf("Find %d Index:             %5d\n", i, status);
 
     i = 4;
+    status = v.count(&v, &i);
+    printf("Count value %d:            %5d\n", i, status);
+
+    i = 4;
     status = v.erase_element(&v, &i);
     printf("Erase Element %d:     (status %d)\n", i, status);
+
+    i = 4;
+    status = v.count(&v, &i);
+    printf("Count value %d:            %5d\n", i, status);
 
     i = 2;
     status = v.erase_index(&v, i);
@@ -56,11 +64,22 @@ int main()
     printf("Assign:              (status %d)\n", status);
 
     printf("Empty?               (status %d)\n", v.empty(&v));
-    printf("Front:                    %5d\n", *((int*) v.front(&v)));
-    printf("Back:                     %5d\n", *((int*) v.back(&v)));
+    printf("Front:                    %5d\n", *(int*) v.front(&v));
+    printf("Back:                     %5d\n", *(int*) v.back(&v));
     printf("Shrink:              (status %d)\n", v.shrink(&v));
     printf("Current size:             %5d\n", v.size(&v));
     printf("Current capacity:         %5d\n", v.capacity(&v));
+
+    printf("\n");
+    for (i = 0; i < v.size(&v); ++i)
+    {
+        printf("v[%d] = %d\n", i, *(int*) v.at(&v, i));
+    }
+    printf("\n");
+
+    i = 68;
+    status = v.fill(&v, &i);
+    printf("Fill:                (status %d)\n", status);
 
     printf("\n");
     for (i = 0; i < v.size(&v); ++i)

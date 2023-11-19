@@ -1,7 +1,7 @@
 /**
  * @file    utils.h - Set of utilities such as functions and structs
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
- * @version 0.2
+ * @version 0.3
  * @date    2023-11-06
  * 
  * @copyright Copyright (c) 2023
@@ -37,9 +37,9 @@ enum boolean {
  * @param size number of bytes to compare
  * @return status
  */
-int compare(const void* a, const void* b, long long size)
+int compare(const void* a, const void* b, int size)
 {
-    long long status = FAILURE;
+    int status = FAILURE;
     if (a != NULL && b != NULL && size > 0)
     {
         if (sizeof(a) >= size && sizeof(b) >= size)
@@ -48,7 +48,7 @@ int compare(const void* a, const void* b, long long size)
             const unsigned char* bytes_b = (const unsigned char*) b;
 
             status = SUCCESS;
-            long long i = 0;
+            int i = 0;
             do {
                 if (bytes_a[i] != bytes_b[i])
                 {
@@ -69,9 +69,9 @@ int compare(const void* a, const void* b, long long size)
  * @param size number of bytes to copy
  * @return status
  */
-int copy(const void* dst, const void* src, long long size)
+int copy(const void* dst, const void* src, int size)
 {
-    long long status = FAILURE;
+    int status = FAILURE;
     if (dst != NULL && src != NULL && size > 0)
     {
         if (sizeof(dst) >= size && sizeof(src) >= size)
@@ -79,7 +79,7 @@ int copy(const void* dst, const void* src, long long size)
             unsigned char* bytes_dst = (unsigned char*) dst;
             unsigned char* bytes_src = (unsigned char*) src;
 
-            long long i;
+            int i;
             for (i = 0; i < size; ++i)
             {
                 bytes_dst[i] = bytes_src[i];

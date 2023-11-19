@@ -1,7 +1,7 @@
 /**
  * @file    vector.h - Dynamic array in C
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
- * @version 0.2
+ * @version 0.3
  * @date    2023-11-06
  * 
  * @copyright Copyright (c) 2023
@@ -42,7 +42,7 @@ typedef struct members {
     int item_size;
 
     /**
-     * Size of the value pointed to in Bytes
+     * Size of the value pointed by an element in Bytes
      */
     int type_size;
 
@@ -106,6 +106,15 @@ struct SVector {
     int (*clear)(vector*);
 
     /**
+     * Counts the number
+     *
+     * @param v pointer to the vector
+     * @param value to count
+     * @return number of occurrences of value
+     */
+    int (*count)(vector*, const void*);
+
+    /**
      * Checks if the vector is empty
      *
      * @param  v pointer to the vector
@@ -130,6 +139,15 @@ struct SVector {
      * @return status
      */
     int (*erase_index)(vector*, int);
+
+    /**
+     * Fills up the vector with the given value
+     *
+     * @param v pointer to the vector
+     * @param value to fill the vector with
+     * @return status
+     */
+     int (*fill)(vector*, const void*);
 
     /**
      * Finds the first occurrence of a value within the vector
@@ -238,7 +256,8 @@ int update_capacity(vector* v, int new_capacity)
     if (temp != NULL)
     {
         v -> members.capacity = new_capacity;
-        for (int i = 0; i < v -> members.size; ++i)
+        int i;
+        for (i = 0; i < v -> members.size; ++i)
         {
             temp[i] = v -> members.items[i];
         }
@@ -348,6 +367,36 @@ int vclear(vector* v)
 }
 
 /**
+ * Counts the number
+ *
+ * @param v pointer to the vector
+ * @param value to count
+ * @return number of occurrences of value
+ */
+int vcount(vector* v, const void* value)
+{
+    int count = 0;
+    if (v != NULL)
+    {
+        if (v -> members.items != NULL && value != NULL && !v -> empty(v))
+        {
+            int size = v -> get_type_size(v);
+            const void* a = NULL;
+            int i;
+            for (i = 0; i < v -> size(v); ++i)
+            {
+                a = v -> members.items + i;
+                if (compare(a, value, size) == 0)
+                {
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+/**
  * Checks if the vector is empty
  *
  * @param  v pointer to the vector
@@ -428,6 +477,34 @@ int verase_index(vector* v, int index)
                     status |= copy(destination, source, type_size);
                 }
                 status |= v -> resize(v, v -> size(v) - 1);
+            }
+        }
+    }
+    return status;
+}
+
+/**
+ * Fills up the vector with the given value
+ *
+ * @param v pointer to the vector
+ * @param value to fill the vector with
+ * @return status
+ */
+int vfill(vector* v, const void* value)
+{
+    int status = FAILURE;
+    if (v != NULL)
+    {
+        if (v -> members.items != NULL && value != NULL && !v -> empty(v))
+        {
+            status = SUCCESS;
+            int size = v -> get_type_size(v);
+            const void* destination = NULL;
+            int i;
+            for (i = 0; i < v -> size(v); ++i)
+            {
+                destination = v -> members.items + i;
+                status |= copy(destination, value, size);
             }
         }
     }
@@ -675,7 +752,7 @@ int vsize(vector* v)
  * @param item_size size of the elements
  * @param initialCapacity allocated amount memory for elements
  */
-void vector_init(vector *v, long long item_size, long long type_size, long long initialCapacity)
+void vector_init(vector *v, int type_size, int initialSize, int initialCapacity)
 {
     if (v != NULL)
     {
@@ -685,9 +762,11 @@ void vector_init(vector *v, long long item_size, long long type_size, long long 
         v -> back = vback;
         v -> capacity = vcapacity;
         v -> clear = vclear;
+        v -> count = vcount;
         v -> empty = vempty;
         v -> erase_element = verase_element;
         v -> erase_index = verase_index;
+        v -> fill = vfill;
         v -> find = vfind;
         v -> free = vfree;
         v -> front = vfront;
@@ -701,27 +780,27 @@ void vector_init(vector *v, long long item_size, long long type_size, long long 
         v -> size = vsize;
 
         // Members
-        v -> members.size = VECTOR_INIT_SIZE;
+        v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
 
-        if (item_size > 0 && item_size <= INT_MAX)
-        {
-            v -> members.item_size = item_size;
-        }
-        else
-        {
-            v -> members.item_size = VECTOR_DEFAULT_ITEMSIZE;
-        }
-
-        if (type_size > 0 && type_size <= INT_MAX)
+        if (type_size > 0)
         {
             v -> members.type_size = type_size;
         }
         else
         {
-            v -> members.type_size = sizeof(type_size);
+            v -> members.type_size = VECTOR_DEFAULT_TYPESIZE;
         }
 
-        if (initialCapacity > 0 && initialCapacity <= INT_MAX)
+        if (initialSize > 0)
+        {
+            v -> members.size = initialSize;
+        }
+        else
+        {
+            v -> members.size = VECTOR_INIT_SIZE;
+        }
+
+        if (initialCapacity > 0)
         {
             v -> members.capacity = initialCapacity;
         }
@@ -730,13 +809,14 @@ void vector_init(vector *v, long long item_size, long long type_size, long long 
             v -> members.capacity = VECTOR_INIT_CAPACITY;
         }
 
-        long long size = v -> size(v);
-        if (size > v -> capacity(v))
+        int size = v -> size(v);
+        int capacity = v -> capacity(v);
+        if (size > capacity)
         {
-            v -> members.capacity = size;
+            v -> members.capacity = size + 1;
         }
 
-        v -> members.items = malloc(v -> members.capacity * v -> members.item_size);
+        v -> members.items = malloc(capacity * v -> get_type_size(v));
     }
 }
 
