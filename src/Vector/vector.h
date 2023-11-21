@@ -382,7 +382,7 @@ int vclear(vector* v)
  */
 int vcount(vector* v, const void* value)
 {
-    int count = 0;
+    int count = VALUE_ERROR;
     if (v != NULL)
     {
         if (v -> members.items != NULL && value != NULL && !v -> empty(v))
