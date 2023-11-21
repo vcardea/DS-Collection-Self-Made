@@ -4,9 +4,9 @@ project(DS_Collection_Self_Made C)
 set(CMAKE_C_STANDARD 11)
 
 include_directories(.)
-include_directories(Vector)
+include_directories(src)
 
 add_executable(DS_Collection_Self_Made
-        Vector/vector.h
-        Vector/vector_test_int.c
-        utils.h)
+        src/Vector/vector.h
+        src/Vector/vector_test_int.c
+        src/utils.h)
