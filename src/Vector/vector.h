@@ -106,7 +106,7 @@ struct SVector {
     int (*clear)(vector*);
 
     /**
-     * Counts the number
+     * Counts the number of occurrences of a given value
      *
      * @param v pointer to the vector
      * @param value to count
@@ -374,7 +374,7 @@ int vclear(vector* v)
 }
 
 /**
- * Counts the number
+ * Counts the number of occurrences of a given value
  *
  * @param v pointer to the vector
  * @param value to count
