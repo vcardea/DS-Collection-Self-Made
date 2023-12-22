@@ -13,7 +13,7 @@
 int main()
 {
     vector v;
-    vector_init(&v, sizeof(int), 0, 1);
+    vector_init(&v, sizeof(int), 3, 3);
 
     printf("Initial size:             %5d\n", v.size(&v));
     printf("Initial capacity:         %5d\n", v.capacity(&v));
@@ -24,15 +24,15 @@ int main()
     int i;
     int status;
     printf("\n");
-    for (i = 1; i <= 6; ++i)
+    for (i = 3; i <= 6; ++i)
     {
         status = v.push_back(&v, &i);
-        printf("v[%d] = %d (status %d)\n", i - 1, *(int*) v.at(&v, i - 1), status);
+        printf("Push Back: (status %d)\n", status);
     }
     printf("\n");
 
     // Operations
-    status = *(int*) v.pop_back(&v);
+    /*status = *(int*) v.pop_back(&v);
     printf("Pop Back:                 %5d\n", status);
 
     i = 104;
@@ -79,7 +79,7 @@ int main()
 
     i = 68;
     status = v.fill(&v, &i);
-    printf("Fill:                (status %d)\n", status);
+    printf("Fill:                (status %d)\n", status);*/
 
     printf("\n");
     for (i = 0; i < v.size(&v); ++i)
