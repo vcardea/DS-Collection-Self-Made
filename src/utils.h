@@ -1,8 +1,8 @@
 /**
- * @file    utils.h - Set of utilities such as functions and structs
+ * @file    utils.h - Set of utilities
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
- * @version 0.3
- * @date    2023-11-06
+ * @version 0.4
+ * @date    2023-12-23
  * 
  * @copyright Copyright (c) 2023
  */
@@ -44,18 +44,15 @@ int compare(const void* a, const void* b, int size)
     int status = FAILURE;
     if (a && b && size > 0)
     {
+        status = SUCCESS;
         const unsigned char* bytes_a = (const unsigned char*) a;
         const unsigned char* bytes_b = (const unsigned char*) b;
-
-        status = SUCCESS;
         int i = 0;
-        do {
-            if (bytes_a[i] != bytes_b[i])
-            {
-                status = FAILURE;
-            }
+        while (i < size && !status)
+        {
+            status = (bytes_a[i] != bytes_b[i]);
             i++;
-        } while (i < size && !status);
+        }
     }
     return status;
 }
@@ -68,7 +65,7 @@ int compare(const void* a, const void* b, int size)
  * @param size number of bytes to copy
  * @return status
  */
-int copy(const void* dst, const void* src, int size)
+int copy(const void* dst, const void* src, size_t size)
 {
     int status = FAILURE;
     if (dst && src && size > 0)
@@ -87,32 +84,27 @@ int copy(const void* dst, const void* src, int size)
 }
 
 /**
+ * Sets all bytes in the interval [start, end) to the specified value
  *
- *
- * @param start
- * @param end
- * @param value
- * @param value_size
- * @return
+ * @param start pointer to the first byte
+ * @param end pointer after the last byte
+ * @param value value to copy
+ * @param value_size size of the value
+ * @return status - number of copies which went wrong
  */
-int set(const void* start, const void* end, const void* value, int value_size)
+int set(const void* start, const void* end, const void* value, size_t value_size)
 {
     int status = FAILURE;
     if (start && end && value)
     {
-        unsigned char* bytes_start = (unsigned char*) start;
-        const unsigned char* bytes_value = (unsigned char*) value;
+        status = SUCCESS;
         long long bytes = end - start;
-        long long i;
+        size_t i;
         for (i = 0; i < bytes; i += value_size)
         {
-            int j;
-            for (j = 0; j < min(value_size, bytes - i); ++j)
-            {
-                bytes_start[i + j] = bytes_value[j];
-            }
+            value_size = min(value_size, bytes - i);
+            status += copy(start + i, value, value_size);
         }
-        status = SUCCESS;
     }
     return status;
 }
