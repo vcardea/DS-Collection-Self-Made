@@ -2,7 +2,7 @@
  * @file    vector.h - Dynamic array in C
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
  * @version 0.4
- * @date    2023-12-23
+ * @date    2023-12-26
  * 
  * @copyright Copyright (c) 2023
  */

@@ -1,8 +1,8 @@
 /**
- * @file    vector.h - Dynamic array in C
+ * @file    vector_test_int.h - Main program for testing the vector with integers
  * @author  Vincenzo Cardea (vincenzo.cardea.05@gmail.com)
  * @version 0.4
- * @date    2023-12-23
+ * @date    2023-12-26
  *
  * @copyright Copyright (c) 2023
  */
@@ -86,7 +86,7 @@ int main()
     }
     printf("\n");
 
-    i = 0;
+    i = 3;
     status = v.remove_if(&v, 0, v.size(&v), &i, sizeof(int), custom_compare);
     printf("Remove If v[i] == 0:    (status %d)\n", status);
 
@@ -121,13 +121,15 @@ int main()
     i = *(int*) (v.rend(&v) + sizeof(void*));
     printf("Reversed end:                %5d\n", i);
 
+    status = swap(v.begin(&v), v.rbegin(&v), sizeof(int));
+    printf("Swap %d %d:             (status %d)\n", *(int*)v.begin(&v), *(int*)v.rbegin(&v), status);
+
     printf("\n");
     for (i = 0; i < v.size(&v); ++i)
     {
         printf("v[%d] = %d\n", i, *(int*) v.at(&v, i));
     }
     printf("\n");
-
 
     printf("Clear:                  (status %d)\n", v.clear(&v));
 

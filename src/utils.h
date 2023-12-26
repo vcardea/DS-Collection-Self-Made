@@ -109,4 +109,26 @@ int set(const void* start, const void* end, const void* value, size_t value_size
     return status;
 }
 
+/**
+ * Swaps two elements
+ *
+ * @param a first element to swap
+ * @param b second element to swap
+ * @param size number of bytes to consider
+ * @return status
+ */
+int swap(void* a, void* b, int size)
+{
+    int status = FAILURE;
+    if (a && b && size > 0)
+    {
+        status = SUCCESS;
+        void* temp;
+        status |= copy(temp, a, size);
+        status |= copy(a, b, size);
+        status |= copy(b, temp, size);
+    }
+    return status;
+}
+
 #endif
