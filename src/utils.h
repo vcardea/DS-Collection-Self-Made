@@ -124,9 +124,9 @@ int swap(void* a, void* b, int size)
     {
         status = SUCCESS;
         void* temp;
-        status |= copy(temp, a, size);
-        status |= copy(a, b, size);
-        status |= copy(b, temp, size);
+        status += copy(temp, a, size);
+        status += copy(a, b, size);
+        status += copy(b, temp, size);
     }
     return status;
 }

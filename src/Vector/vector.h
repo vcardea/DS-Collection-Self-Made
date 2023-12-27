@@ -50,6 +50,7 @@ typedef struct members {
      * Array of pointers to elements
      */
     void** items;
+
 } members;
 
 /**
@@ -253,7 +254,7 @@ struct SVector {
 
     /**
      * It removes elements when compare function returns true within the
-     * interval [begin, end).
+     * interval [start, end).
      *
      * @param v pointer to the vector
      * @param start index which to start from
@@ -289,6 +290,7 @@ struct SVector {
      * @return current size
      */
     int (*size)(vector*);
+    
 };
 
 /**
@@ -670,7 +672,7 @@ int vfree(vector* v)
     int status = FAILURE;
     if (v)
     {
-        free(v -> members.items);
+        free(v -> begin(v));
         v -> members.size = VECTOR_INIT_SIZE;
         status = update_capacity(v, VECTOR_INIT_CAPACITY);
     }
@@ -744,10 +746,6 @@ int vinsert(vector* v, const void* item, int pos)
             return status;
         }
 
-        v -> resize(v, size + 1);
-
-        void* source = NULL;
-        void* destination = NULL;
         int type_size = v -> get_type_size(v);
         if (type_size == VALUE_ERROR)
         {
@@ -755,6 +753,9 @@ int vinsert(vector* v, const void* item, int pos)
         }
 
         status = SUCCESS;
+        v -> resize(v, size + 1);
+        void* source = NULL;
+        void* destination = NULL;
         int i;
         for (i = size - 1; i >= pos; --i)
         {
@@ -842,7 +843,7 @@ void* vrbegin(vector* v)
 
 /**
  * It removes elements when compare function returns true within the
- * interval [begin, end).
+ * interval [start, end).
  *
  * @param v pointer to the vector
  * @param start index which to start from
@@ -892,31 +893,6 @@ int vremove_if(vector* v, int start, int end, const void* value, int value_size,
         }
         v -> resize(v, count_zero);
         removes = size - count_zero;
-
-        /*int item_size = sizeof(void*);
-        int type_size = v -> get_type_size(v);
-        long long iterations = (v -> end(v) - v -> begin(v)) / item_size;
-        long long i = 0;
-        while (i < iterations)
-        {
-            if (custom_compare(v -> members.items + i, value, value_size))
-            {
-                void* source = NULL;
-                void* destination = NULL;
-                long long j;
-                for (j = i + 1; j < iterations; ++j)
-                {
-                    source = v -> members.items + j;
-                    destination = v -> members.items + j - 1;
-                    copy(destination, source, type_size);
-                }
-                removes++;
-                iterations--;
-            }
-            else i++;
-        }
-        removes++;
-        v -> resize(v, (int) iterations);*/
     }
     return removes;
 }
