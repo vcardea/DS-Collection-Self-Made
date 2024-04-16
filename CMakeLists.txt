@@ -9,4 +9,6 @@ include_directories(src)
 add_executable(DS_Collection_Self_Made
         src/Vector/vector.h
         src/Vector/vector_test_int.c
-        src/utils.h)
+        src/utils.h
+        src/Vector/vector_test_float.c
+)
